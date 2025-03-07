@@ -9,9 +9,9 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: "https://github.com/YusufEmirAltay/my-basic-app-deploy.git"
+    repoURL: https://github.com/YusufEmirAltay/my-basic-app-deploy.git
     targetRevision: HEAD
-    path: "/"
+    path: /
   syncPolicy:
     automated:
       prune: true
