@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: my-basic-app
-          image: ysufemrlty/my-basic-app:latest
+          image: ysufemrlty/my-basic-app
           ports:
             - containerPort: 5000
