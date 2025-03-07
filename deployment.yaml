@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-basic-app
+  labels:
+    app: my-basic-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-basic-app
+  template:
+    metadata:
+      labels:
+        app: my-basic-app
+    spec:
+      containers:
+        - name: my-basic-app
+          image: https://github.com/YusufEmirAltay/my-basic-app:latest
+          ports:
+            - containerPort: 5000
