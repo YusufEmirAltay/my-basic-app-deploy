@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/YusufEmirAltay/my-basic-app-deploy.git
     targetRevision: HEAD
-    path: /
+    path: deploy
   syncPolicy:
     automated:
       prune: true
