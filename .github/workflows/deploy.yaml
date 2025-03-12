@@ -32,7 +32,7 @@ jobs:
 
       - name: Update deployment.yaml with new image tag
         run: |
-          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/deployment.yaml
+          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/k8s-sources/flask/deployment.yaml
 
       - name: Commit and Push Changes
         run: |
