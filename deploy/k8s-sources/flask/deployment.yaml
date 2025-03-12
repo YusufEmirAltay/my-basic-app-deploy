@@ -19,3 +19,5 @@ spec:
           image: ysufemrlty/my-basic-app:20250312142527
           ports:
             - containerPort: 5000
+            
+            
