@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: app-of-apps
+  name: flask-app
   namespace: argocd
 spec:
-  destination:
-    namespace: default
-    server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://github.com/YusufEmirAltay/my-basic-app-deploy.git
+    repoURL: https://github.com/YusufEmirAltay/my-basic-app-deploy
     targetRevision: HEAD
-    path: deploy
+    path: deploy/k8s-sources/flask
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: flask
   syncPolicy:
     automated:
       prune: true
