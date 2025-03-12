@@ -40,7 +40,7 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git add deploy/k8s-sources/flask/deployment.yaml
           git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
-          git push origin main
+          git push origin master
 
   deploy:
     needs: build-and-push
