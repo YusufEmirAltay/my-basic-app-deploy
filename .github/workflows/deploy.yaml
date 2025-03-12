@@ -48,4 +48,4 @@ jobs:
     steps:
       - name: Sync ArgoCD
         run: |
-          curl -k -X POST https://$(192.168.49.2):31142/api/v1/applications/root-app/sync
+          curl -k -X POST https://192.168.49.2:31142/api/v1/applications/root-app/sync
