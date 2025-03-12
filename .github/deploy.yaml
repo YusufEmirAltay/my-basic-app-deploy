@@ -1,0 +1,44 @@
+name: Flask CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Set Version
+        run: echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Flask Image
+        run: |
+          docker build -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f Dockerfile .
+          docker push ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}
+
+      - name: Update deployment.yaml with new image tag
+        run: |
+          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/deployment.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add deploy/deployment.yaml
+          git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
+          git push origin main
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync ArgoCD
+        run: |
+          curl -k -X POST https://localhost:8080/api/v1/applications/root-app/sync
