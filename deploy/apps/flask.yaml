@@ -13,6 +13,6 @@ spec:
     server: https://kubernetes.default.svc
     namespace: flask
   syncPolicy:
-    automated:
+    automated: false
       prune: true
       selfHeal: false
