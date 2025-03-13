@@ -41,11 +41,3 @@ jobs:
           git add deploy/k8s-sources/flask/deployment.yaml
           git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
           git push origin master
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Sync ArgoCD
-        run: |
-          curl -k -X POST https://192.168.49.2:31142/api/v1/applications/root-app/sync
