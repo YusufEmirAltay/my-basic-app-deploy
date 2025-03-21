@@ -12,12 +12,20 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
-      - name: Set Version
+      - name: Checkout second Repo
+        uses: actions/checkout@v2
+        with:
+          repository: YusufEmirAltay/my-basic-app
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: my-basic-app
+
+      - name: Get Latest Version
         run: |
-          VERSION=$(curl -s https://api.github.com/repos/ysufemrlty/my-basic-app/releases/latest | jq -r .tag_name || echo "v0")
+          # Get latest release tag
+          VERSION=$(curl -s https://api.github.com/repos/YusufEmirAltay/my-basic-app/releases/latest | jq -r .tag_name || echo "v0")
           VERSION_NUM=$(echo $VERSION | sed 's/v//')
           NEXT_VERSION="v$((VERSION_NUM + 1))"
-          echo "IMAGE_TAG=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
 
       - name: Cache pip dependencies
         uses: actions/cache@v3
@@ -32,19 +40,22 @@ jobs:
 
       - name: Build Flask Image with Cache
         run: |
-          docker pull ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} || true
-          docker pull ysufemrlty/my-basic-app:v$(( $(echo ${{ env.IMAGE_TAG }} | sed 's/v//') - 1 )) || true
-          docker build --cache-from ysufemrlty/my-basic-app:v$(( $(echo ${{ env.IMAGE_TAG }} | sed 's/v//') - 1 )) -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
-          docker push ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}
+          # Check if the previous version exists
+          docker pull ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }} || true
+          PREVIOUS_TAG="v$(( $(echo ${{ env.NEXT_VERSION }} | sed 's/v//') - 1 ))"
+          docker pull ysufemrlty/my-basic-app:${PREVIOUS_TAG} || true
+          # Build the new image with cache
+          docker build --cache-from ysufemrlty/my-basic-app:${PREVIOUS_TAG} -t ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }} -f my-basic-app/app/Dockerfile my-basic-app/app
+          docker push ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }}
 
       - name: Update deployment.yaml with new image tag
         run: |
-          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/k8s-sources/flask/deployment.yaml
+          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }}|' deploy/k8s-sources/flask/deployment.yaml
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add deploy/k8s-sources/flask/deployment.yaml
-          git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
+          git commit -m "Update Flask image to ${{ env.NEXT_VERSION }}"
           git push origin master
