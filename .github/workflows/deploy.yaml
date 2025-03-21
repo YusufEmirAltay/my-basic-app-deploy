@@ -21,7 +21,7 @@ jobs:
 
       - name: Get Latest Version
         run: |
-          # Get latest release tag
+          # Get the latest release tag
           VERSION=$(curl -s https://api.github.com/repos/YusufEmirAltay/my-basic-app/releases/latest | jq -r .tag_name || echo "v0")
           VERSION_NUM=$(echo $VERSION | sed 's/v//')
           NEXT_VERSION="v$((VERSION_NUM + 1))"
@@ -41,7 +41,6 @@ jobs:
       - name: Build Flask Image with Cache
         run: |
           # Check if the previous version exists
-          docker pull ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }} || true
           PREVIOUS_TAG="v$(( $(echo ${{ env.NEXT_VERSION }} | sed 's/v//') - 1 ))"
           docker pull ysufemrlty/my-basic-app:${PREVIOUS_TAG} || true
           # Build the new image with cache
