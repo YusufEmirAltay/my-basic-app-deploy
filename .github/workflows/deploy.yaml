@@ -1,3 +1,4 @@
+pipeline:
 name: Flask CI/CD Pipeline
 
 on:
@@ -22,13 +23,24 @@ jobs:
       - name: Set Version
         run: echo "IMAGE_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build Flask Image
+      - name: Build Flask Image with Cache
         run: |
-          docker build -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
+          docker pull ysufemrlty/my-basic-app:latest || true
+          docker build --cache-from ysufemrlty/my-basic-app:latest -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
           docker push ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}
+          docker tag ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} ysufemrlty/my-basic-app:latest
+          docker push ysufemrlty/my-basic-app:latest
 
       - name: Update deployment.yaml with new image tag
         run: |
