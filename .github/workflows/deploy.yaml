@@ -39,9 +39,12 @@ jobs:
 
       - name: Build Flask Image with Cache
         run: |
-          docker pull ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} || true
-          docker pull ysufemrlty/my-basic-app:v$(( $(echo ${{ env.IMAGE_TAG }} | sed 's/v//') - 1 )) || true
-          docker build --cache-from ysufemrlty/my-basic-app:v$(( $(echo ${{ env.IMAGE_TAG }} | sed 's/v//') - 1 )) -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
+          # Önceki versiyonun cache'ini çekme
+          PREVIOUS_TAG=v$(( $(echo ${{ env.IMAGE_TAG }} | sed 's/v//') - 1 ))
+          docker pull ysufemrlty/my-basic-app:${PREVIOUS_TAG} || true
+
+          # Yeni image'i build etme ve push
+          docker build --cache-from ysufemrlty/my-basic-app:${PREVIOUS_TAG} -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
           docker push ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}
 
       - name: Update deployment.yaml with new image tag
@@ -52,6 +55,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          # Değişiklikleri commit etmeden önce image tag'ini güncelleme
           sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/k8s-sources/flask/deployment.yaml
           git add deploy/k8s-sources/flask/deployment.yaml
           git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
