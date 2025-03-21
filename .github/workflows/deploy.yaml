@@ -52,6 +52,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}|' deploy/k8s-sources/flask/deployment.yaml
           git add deploy/k8s-sources/flask/deployment.yaml
           git commit -m "Update Flask image to ${{ env.IMAGE_TAG }}"
           git push origin master
