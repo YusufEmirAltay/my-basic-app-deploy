@@ -22,15 +22,23 @@ jobs:
       - name: Get Latest Version from Docker Hub
         run: |
           # Get the latest tag from Docker Hub
-          VERSION=$(curl -s "https://hub.docker.com/v2/repositories/ysufemrlty/my-basic-app/tags/" | jq -r '.results[0].name' || echo "v0")
-          VERSION_NUM=$(echo $VERSION | sed 's/v//')
-          if [ "$VERSION" == "null" ]; then
+          TAGS=$(curl -s "https://hub.docker.com/v2/repositories/ysufemrlty/my-basic-app/tags/?page_size=100" | jq -r '.results[].name')
+          
+          # Filter out non-version tags like "latest"
+          VERSION_TAGS=$(echo "$TAGS" | grep '^v[0-9]*$')
+          
+          # If there are no tags, set the initial version as v1
+          if [ -z "$VERSION_TAGS" ]; then
             NEXT_VERSION="v1"
           else
+            # Get the highest version
+            LAST_VERSION=$(echo "$VERSION_TAGS" | sort -V | tail -n 1)
+            VERSION_NUM=$(echo $LAST_VERSION | sed 's/v//')
             NEXT_VERSION="v$((VERSION_NUM + 1))"
           fi
+
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
-          echo "Last version: $VERSION"
+          echo "Last version: $LAST_VERSION"
           echo "Next version: $NEXT_VERSION"
 
       - name: Cache pip dependencies
