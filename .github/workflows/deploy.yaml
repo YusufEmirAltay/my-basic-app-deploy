@@ -24,7 +24,10 @@ jobs:
 
       - name: Get Previous Image Tag
         run: |
-          PREVIOUS_TAG=$(docker pull ysufemrlty/my-basic-app:latest 2>/dev/null && docker inspect --format='{{index .RepoTags 0}}' ysufemrlty/my-basic-app || echo "")
+          PREVIOUS_TAG=$(docker images --filter=reference='ysufemrlty/my-basic-app:*' --format '{{.Tag}}' | grep -v '<none>' | sort -r | head -n 1)
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG="latest"
+          fi
           echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
 
       - name: Cache pip dependencies
