@@ -35,11 +35,9 @@ jobs:
 
       - name: Build Flask Image with Cache
         run: |
-          docker pull ysufemrlty/my-basic-app:latest || true
-          docker build --cache-from ysufemrlty/my-basic-app:latest -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
+          docker pull ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} || true
+          docker build --cache-from ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -t ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} -f my-basic-app/app/Dockerfile my-basic-app/app
           docker push ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }}
-          docker tag ysufemrlty/my-basic-app:${{ env.IMAGE_TAG }} ysufemrlty/my-basic-app:latest
-          docker push ysufemrlty/my-basic-app:latest
 
       - name: Update deployment.yaml with new image tag
         run: |
