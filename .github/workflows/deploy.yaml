@@ -26,6 +26,8 @@ jobs:
           VERSION_NUM=$(echo $VERSION | sed 's/v//')
           NEXT_VERSION="v$((VERSION_NUM + 1))"
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "Last version: $VERSION"
+          echo "Next version: $NEXT_VERSION"
 
       - name: Cache pip dependencies
         uses: actions/cache@v3
@@ -40,8 +42,9 @@ jobs:
 
       - name: Build Flask Image with Cache
         run: |
-          # Check if the previous version exists
+          # Get previous version
           PREVIOUS_TAG="v$(( $(echo ${{ env.NEXT_VERSION }} | sed 's/v//') - 1 ))"
+          echo "Previous tag: $PREVIOUS_TAG"
           docker pull ysufemrlty/my-basic-app:${PREVIOUS_TAG} || true
           # Build the new image with cache
           docker build --cache-from ysufemrlty/my-basic-app:${PREVIOUS_TAG} -t ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }} -f my-basic-app/app/Dockerfile my-basic-app/app
@@ -49,6 +52,7 @@ jobs:
 
       - name: Update deployment.yaml with new image tag
         run: |
+          echo "Updating deployment.yaml with image tag: ${{ env.NEXT_VERSION }}"
           sed -i 's|ysufemrlty/my-basic-app:.*|ysufemrlty/my-basic-app:${{ env.NEXT_VERSION }}|' deploy/k8s-sources/flask/deployment.yaml
 
       - name: Commit and Push Changes
